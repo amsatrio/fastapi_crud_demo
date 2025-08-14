@@ -1,0 +1,34 @@
+@baseUrl = http://localhost:8989
+@id=1754726491
+
+### GET m-biodata/{id}
+GET {{baseUrl}}/api/v1/m-biodata/{{id}}
+Content-Type: application/json
+
+### GET m-biodata/list
+GET {{baseUrl}}/api/v1/m-biodata/list?page=0&limit=5
+Content-Type: application/json
+
+### POST m-biodata
+POST {{baseUrl}}/api/v1/m-biodata
+Content-Type: application/json
+
+{
+    "fullname": "okey dokey",
+    "mobile_phone": "087263547382"
+}
+
+### PUT m-biodata/{id}
+PUT {{baseUrl}}/api/v1/m-biodata/{{id}}
+Content-Type: application/json
+
+{
+    "fullname": "okey dokey 1212",
+    "mobile_phone": "0872635473",
+    "image_path": null,
+    "image": null
+}
+
+### DELETE m-biodata/{id}
+DELETE {{baseUrl}}/api/v1/m-biodata/{{id}}
+Content-Type: application/json

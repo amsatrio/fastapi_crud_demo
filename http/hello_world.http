@@ -1,0 +1,58 @@
+@baseUrl = http://localhost:8989
+
+### GET hello-world
+GET {{baseUrl}}/api/v1/hello-world
+Content-Type: application/json
+
+### GET hello-world/path
+GET {{baseUrl}}/api/v1/hello-world/path/asas
+Content-Type: application/json
+
+### GET hello-world/query
+GET {{baseUrl}}/api/v1/hello-world/query?message=asa
+Content-Type: application/json
+
+### POST hello-world
+POST {{baseUrl}}/api/v1/hello-world
+Content-Type: application/json
+
+{
+    "message": "awk"
+}
+
+
+### POST hello-world
+POST {{baseUrl}}/api/v1/hello-world
+Content-Type: application/json
+
+{
+    "message": null
+}
+
+### GET hello-world/logger
+GET {{baseUrl}}/api/v1/hello-world/logger
+Content-Type: application/json
+
+### GET hello-world/error
+GET {{baseUrl}}/api/v1/hello-world/error?error_type=400
+Content-Type: application/json
+
+### POST hello-world/upload-file
+POST {{baseUrl}}/api/v1/hello-world/upload-file
+Content-Type: multipart/form-data; boundary="my_boundary"
+
+--my_boundary
+Content-Disposition: form-data; name="token"
+
+test token
+--my_boundary
+Content-Disposition: form-data; name="file"; filename="tes.jpg"
+Content-Type: image/jpeg
+
+< /home/mos/Pictures/tes.jpg
+--my_boundary
+Content-Disposition: form-data; name="fileb"; filename="tes.jpg"
+Content-Type: image/jpeg
+
+< /home/mos/Pictures/tes.jpg
+--my_boundary--

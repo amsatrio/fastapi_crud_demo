@@ -1,0 +1,7 @@
+fastapi[standard]
+sqlalchemy 
+asyncmy
+python-multipart
+lru-cache
+pydantic
+pydantic-settings
