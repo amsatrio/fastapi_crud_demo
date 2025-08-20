@@ -1,6 +1,5 @@
 from fastapi import APIRouter, HTTPException, File, UploadFile, Form
 from typing import Annotated
-from .schemas import HelloWorld
 from src.dto.response import AppResponse
 from fastapi.responses import JSONResponse
 import logging

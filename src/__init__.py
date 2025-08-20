@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request
 from src.hello_world.routes import hello_world_router
 from src.m_biodata.routes import m_biodata_router
+from src.health.routes import health_router
 from src.config import logger_config
 from src.app import app
 from src import middleware

@@ -1,0 +1,9 @@
+@baseUrl = http://localhost:8989
+
+### GET health/status
+GET {{baseUrl}}/api/v1/health/status
+Content-Type: application/json
+
+### GET health/info
+GET {{baseUrl}}/api/v1/health/info
+Content-Type: application/json
