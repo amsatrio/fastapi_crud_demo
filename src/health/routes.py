@@ -6,6 +6,7 @@ import logging
 import shutil
 from pathlib import Path
 from src.config import configuration
+from src.config.database_config import Base, engine
 
 log = logging.getLogger(__name__)
 health_router = APIRouter()
@@ -31,5 +32,16 @@ async def info():
             "app_name": settings.app_name,
             "database_url": settings.database_url[:10] + "...",  # Truncate for security
         },
+    )
+    return response_data.generate_json_response()
+
+@health_router.get("/init-db", response_model=AppResponse[str])
+async def init_db():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    response_data = AppResponse[str](
+        status=200,
+        message="Success",
+        data="ok",
     )
     return response_data.generate_json_response()

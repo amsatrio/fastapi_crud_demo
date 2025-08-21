@@ -3,14 +3,14 @@ import logging
 from logging.config import dictConfig
 import sys
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 # Custom JSON formatter
 class JsonFormatter(logging.Formatter):
     def format(self, record):
         log_record = {
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "level": record.levelname,
             "logger": record.name,
             "module": record.module,

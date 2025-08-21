@@ -7,3 +7,7 @@ Content-Type: application/json
 ### GET health/info
 GET {{baseUrl}}/api/v1/health/info
 Content-Type: application/json
+
+### GET health/init-db
+GET {{baseUrl}}/api/v1/health/init-db
+Content-Type: application/json

@@ -1,4 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException
+from typing import Annotated
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from sqlalchemy import func
+from src.dto.page_response import PageResponse
 from src.m_biodata.schemas import (
     MBiodata,
     MBiodataResponse,
@@ -8,11 +11,10 @@ from src.m_biodata.schemas import (
 from src.m_biodata import services
 from src.dto.response import AppResponse
 from src.config.database_config import get_db
+from src.util.file_util import read_file, write_file
 
-from fastapi.responses import JSONResponse
 import logging
-import time
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -22,7 +24,7 @@ m_biodata_router = APIRouter()
 
 
 # Create a new biodata
-@m_biodata_router.post("/", response_model=AppResponse[MBiodataResponse])
+@m_biodata_router.post("/", response_model=AppResponse[MBiodataResponse], status_code=201)
 async def create_biodata(biodata: MBiodataCreate, db: AsyncSession = Depends(get_db)):
     new_biodata = await services.create(biodata, db)
 
@@ -31,41 +33,82 @@ async def create_biodata(biodata: MBiodataCreate, db: AsyncSession = Depends(get
         message="Success",
         data=new_biodata,
     )
-    return response_data.generate_json_response()
+    return response_data
 
 
-# Get all biodata
-@m_biodata_router.get("/list", response_model=AppResponse[list[MBiodataResponse]])
-async def read_list_biodata(
+# Get page biodata
+@m_biodata_router.get("/pagination", response_model=AppResponse[PageResponse[MBiodataResponse]], status_code=200)
+async def read_pagination_biodata(
     page: int = 0, limit: int = 10, db: AsyncSession = Depends(get_db)
 ):
     result = await db.execute(select(MBiodata).offset(page * limit).limit(limit))
     biodatas = result.scalars().all()
+    
+    result_total_data = await db.execute(select(func.count()).select_from(MBiodata))
+    total_data = result_total_data.scalar()
+    total_pages = int(total_data / limit)
+    if total_data % limit != 0:
+        total_pages = total_pages + 1
+
+    biodata_response_list = []
+    for biodata in biodatas:
+        if biodata.image_path is not None:
+            biodata.image = read_file(biodata.image_path)
+        biodata_response_list.append(MBiodataResponse.model_validate(biodata))
+        
+    page_response = PageResponse[MBiodataResponse] (
+        totalPages=total_pages,
+        totalElements=total_data,
+        content=biodata_response_list
+    )
+
+    response_data = AppResponse[PageResponse[MBiodataResponse]](
+        status=200,
+        message="Success",
+        data=page_response,
+    )
+    return response_data
+
+# Get all biodata
+@m_biodata_router.get("/list", response_model=AppResponse[list[MBiodataResponse]], status_code=200)
+async def read_list_biodata(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(MBiodata))
+    biodatas = result.scalars().all()
+    
+    biodata_response_list = []
+    for biodata in biodatas:
+        if biodata.image_path is not None:
+            biodata.image = read_file(biodata.image_path)
+        biodata_response_list.append(biodata)
 
     response_data = AppResponse[list[MBiodataResponse]](
         status=200,
         message="Success",
-        data=biodatas,
+        data=biodata_response_list,
     )
-    return response_data.generate_json_response()
+    return response_data
 
 
 # Get biodata by ID
 @m_biodata_router.get("/{biodata_id}", response_model=AppResponse[MBiodataResponse])
 async def read_biodata(biodata_id: int, db: AsyncSession = Depends(get_db)):
-    # existing_biodata = await services.find_by_id(biodata_id, db)
     result = await db.execute(select(MBiodata).where(MBiodata.id == biodata_id))
     existing_biodata = result.scalar_one_or_none()
     if not existing_biodata:
         raise HTTPException(status_code=404, detail="Biodata not found")
+    
+    if existing_biodata.image_path is not None:
+        existing_biodata.image = read_file(existing_biodata.image_path)
 
-    data = MBiodataResponse.from_orm(existing_biodata)
+    log.info("read file success")
+    data = MBiodataResponse.model_validate(existing_biodata)
+    log.info("model_validate success")
     response_data = AppResponse[MBiodataResponse](
         status=200,
         message="Success",
         data=data,
     )
-    return response_data.generate_json_response()
+    return response_data
 
 
 # Update biodata by ID
@@ -79,10 +122,10 @@ async def update_biodata(
     if not existing_biodata:
         raise HTTPException(status_code=404, detail="Biodata not found")
 
-    for key, value in biodata.dict(exclude_unset=True).items():
+    for key, value in biodata.model_dump(exclude_unset=True).items():
         setattr(existing_biodata, key, value)
 
-    existing_biodata.modified_on = datetime.utcnow()
+    existing_biodata.modified_on = datetime.now(timezone.utc)
 
     await db.commit()
     await db.refresh(existing_biodata)
@@ -92,7 +135,7 @@ async def update_biodata(
         message="Success",
         data=existing_biodata,
     )
-    return response_data.generate_json_response()
+    return response_data
 
 
 # Delete biodata by ID
@@ -108,4 +151,34 @@ async def delete_biodata(biodata_id: int, db: AsyncSession = Depends(get_db)):
     await db.commit()
 
     response_data = AppResponse[str](status=200, message="Success")
-    return response_data.generate_json_response()
+    return response_data
+
+# Update image biodata
+image_base_path = './data'
+@m_biodata_router.post("/image/{biodata_id}")
+async def update_image_biodata(
+    image: Annotated[UploadFile, File()],
+    biodata_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    result = await db.execute(select(MBiodata).where(MBiodata.id == biodata_id))
+    existing_biodata = result.scalar_one_or_none()
+
+    if not existing_biodata:
+        raise HTTPException(status_code=404, detail="Biodata not found")
+
+    file_path = write_file(image.file, image_base_path, biodata_id, "image", image.filename)
+
+    existing_biodata.modified_on = datetime.now(timezone.utc)
+    existing_biodata.image_path = file_path
+    # existing_biodata.image = read_file(existing_biodata.image_path)
+
+    await db.commit()
+    await db.refresh(existing_biodata)
+
+    response_data = AppResponse[MBiodataResponse](
+        status=200,
+        message="Success",
+        data=existing_biodata,
+    )
+    return response_data

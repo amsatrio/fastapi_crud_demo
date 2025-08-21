@@ -1,11 +1,12 @@
 from fastapi import Request, HTTPException
-from fastapi.exceptions import RequestValidationError
+from fastapi.exceptions import RequestValidationError, ResponseValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from src.app import app
 from src.dto.response import AppResponse
 from sqlalchemy.exc import OperationalError
 import logging
 import time
+from pydantic_core._pydantic_core import ValidationError
 
 @app.exception_handler(StarletteHTTPException)
 async def starlette_http_exception_handler(request: Request, e: StarletteHTTPException):
@@ -45,6 +46,27 @@ async def validation_exception_handler(request: Request, e: RequestValidationErr
 
 @app.exception_handler(OperationalError)
 async def operational_error_handler(request: Request, e: OperationalError):
+    print(f"OMG! An ops error!: {repr(e)}")
+    response_data = AppResponse[str](
+        status=500,
+        message=str(e),
+        data=None,
+    )
+    return response_data.generate_json_response()
+
+
+@app.exception_handler(ValidationError)
+async def validation_error_handler(request: Request, e: ValidationError):
+    print(f"OMG! An ops error!: {repr(e)}")
+    response_data = AppResponse[str](
+        status=500,
+        message=str(e),
+        data=None,
+    )
+    return response_data.generate_json_response()
+
+@app.exception_handler(ResponseValidationError)
+async def response_validation_error_handler(request: Request, e: ResponseValidationError):
     print(f"OMG! An ops error!: {repr(e)}")
     response_data = AppResponse[str](
         status=500,

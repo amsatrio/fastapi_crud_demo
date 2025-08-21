@@ -1,12 +1,16 @@
 @baseUrl = http://localhost:8989
-@id=1754726491
+@id=1755677180
 
 ### GET m-biodata/{id}
 GET {{baseUrl}}/api/v1/m-biodata/{{id}}
 Content-Type: application/json
 
 ### GET m-biodata/list
-GET {{baseUrl}}/api/v1/m-biodata/list?page=0&limit=5
+GET {{baseUrl}}/api/v1/m-biodata/list
+Content-Type: application/json
+
+### GET m-biodata/pagination
+GET {{baseUrl}}/api/v1/m-biodata/pagination?page=0&limit=2
 Content-Type: application/json
 
 ### POST m-biodata
@@ -32,3 +36,15 @@ Content-Type: application/json
 ### DELETE m-biodata/{id}
 DELETE {{baseUrl}}/api/v1/m-biodata/{{id}}
 Content-Type: application/json
+
+
+### POST m-biodata/image
+POST {{baseUrl}}/api/v1/m-biodata/image/{{id}}
+Content-Type: multipart/form-data; boundary=----boundary123
+
+------boundary123
+Content-Disposition: form-data; name="image"; filename="file_example_JPG_100kB.jpg"
+Content-Type: image/jpeg
+
+< ./data/sample/file_example_JPG_100kB.jpg
+------boundary123--

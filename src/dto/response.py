@@ -11,12 +11,12 @@ class AppResponse(BaseModel, Generic[T]):
     data: Optional[T]
 
     class Config:
-        # Ensure datetime is formatted correctly in the JSON output
+        from_attributes = True
         json_encoders = {
-            datetime: lambda v: v.isoformat(),
+            datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S"),
         }
     def generate_json_response(self):
         return JSONResponse(
             status_code=self.status,
-            content=self.dict(exclude_none=True),
+            content=self.model_dump(exclude_none=True),
         )

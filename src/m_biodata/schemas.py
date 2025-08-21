@@ -1,11 +1,9 @@
-from pydantic import BaseModel, constr, Field
+from pydantic import BaseModel, constr, Field, field_serializer
 from typing import Optional
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, BigInteger, DateTime, Boolean, BLOB
-from sqlalchemy.ext.declarative import declarative_base
 import json
-
-Base = declarative_base()
+from src.config.database_config import Base
 
 
 class MBiodata(Base):
@@ -20,6 +18,10 @@ class MBiodata(Base):
     modified_by = Column(BigInteger, nullable=True)
     modified_on = Column(DateTime, nullable=True)
     is_delete = Column(Boolean, default=False)
+    class Config:
+        from_attributes = True
+        validate_default = True
+        arbitrary_types_allowed = True
 
 
 class MBiodataCreate(BaseModel):
@@ -41,32 +43,18 @@ class MBiodataUpdate(BaseModel):
 class MBiodataResponse(MBiodataCreate):
     id: int
     created_on: datetime
-    modified_on: Optional[datetime]
-    is_delete: Optional[bool]
+    modified_on: Optional[datetime] = None
+    is_delete: Optional[bool] = False
+    image: Optional[bytes] = None
 
     class Config:
         from_attributes = True
-        json_encoders = {
-            datetime: lambda v: v.isoformat()  # Custom encoder for datetime
-        }
-
-    def __init__(
-        self,
-        id: int,
-        created_on: datetime,
-        modified_on: Optional[datetime],
-        is_delete: Optional[bool],
-    ):
-        self.id = id
-        self.created_on = created_on
-        self.modified_on = modified_on
-        self.is_delete = is_delete
-
-    def to_json(self):
-        return json.dumps(self, default=self.json_serial)
-
-    @staticmethod
-    def json_serial(obj):
-        if isinstance(obj, datetime):
-            return obj.isoformat()
-        raise TypeError("Type not serializable")
+        datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")
+        arbitrary_types_allowed = True
+        
+    @field_serializer("created_on", "modified_on")
+    def serialize_datetime(self, dt: datetime) -> str:
+        """Serializes datetime objects to a specific string format."""
+        if dt is not None:
+            return dt.strftime("%Y-%m-%d %H:%M:%S")
+        return None

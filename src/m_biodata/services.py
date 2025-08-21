@@ -9,11 +9,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 async def create(biodata: MBiodataCreate, db: AsyncSession) -> MBiodataResponse:
-    new_biodata = MBiodata(**biodata.dict(), created_on=datetime.utcnow(), id=int(time.time()))
+    new_biodata = MBiodata(**biodata.model_dump(), created_on=datetime.now(timezone.utc), id=int(time.time()))
     db.add(new_biodata)
     await db.commit()
     await db.refresh(new_biodata)
