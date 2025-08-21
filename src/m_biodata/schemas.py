@@ -1,5 +1,5 @@
-from pydantic import BaseModel, constr, Field, field_serializer
-from typing import Optional
+from pydantic import BaseModel, StringConstraints, constr, Field, field_serializer
+from typing import Annotated, Optional
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, BigInteger, DateTime, Boolean, BLOB
 import json
@@ -25,20 +25,14 @@ class MBiodata(Base):
 
 
 class MBiodataCreate(BaseModel):
-    fullname: constr(min_length=1, max_length=255)
-    mobile_phone: constr(min_length=10, max_length=15) = Field(
-        ..., pattern=r"^\d{10,15}$"
-    )
-
+    fullname: Annotated[str, StringConstraints(min_length=1, max_length=255)]
+    mobile_phone: Annotated[str, StringConstraints(min_length=10, max_length=15, pattern=r"^\d{10,15}$")]
 
 class MBiodataUpdate(BaseModel):
-    fullname: Optional[constr(min_length=1, max_length=255)]
-    mobile_phone: Optional[constr(min_length=10, max_length=15)] = Field(
-        ..., pattern=r"^\d{10,15}$"
-    )
-    image_path: Optional[str]
-    image: Optional[bytes]
-
+    fullname: Optional[Annotated[str, StringConstraints(min_length=1, max_length=255)]] = None
+    mobile_phone: Optional[Annotated[str, StringConstraints(min_length=10, max_length=15, pattern=r"^\d{10,15}$")]] = None
+    image_path: Optional[str] = None
+    image: Optional[bytes] = None
 
 class MBiodataResponse(MBiodataCreate):
     id: int
