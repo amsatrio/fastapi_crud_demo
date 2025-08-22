@@ -6,3 +6,4 @@ lru-cache
 pydantic
 pydantic-settings
 python-multipart
+pytest
