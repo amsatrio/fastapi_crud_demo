@@ -26,6 +26,7 @@ app.add_middleware(
         "https://localhost.tiangolo.com",
         "http://localhost",
         "http://localhost:8989",
+        "http://localhost:5173",
     ],
     allow_credentials=True,
     allow_methods=["*"],
