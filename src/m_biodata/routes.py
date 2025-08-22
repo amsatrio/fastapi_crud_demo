@@ -1,7 +1,9 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
-from sqlalchemy import func
+from sqlalchemy import desc, func
 from src.dto.page_response import PageResponse
+from src.dto.pagination.filtering import Filtering
+from src.dto.pagination.sorting import Sorting
 from src.m_biodata.schemas import (
     MBiodata,
     MBiodataResponse,
@@ -39,15 +41,15 @@ async def create_biodata(biodata: MBiodataCreate, db: AsyncSession = Depends(get
 # Get page biodata
 @m_biodata_router.get("/pagination", response_model=AppResponse[PageResponse[MBiodataResponse]], status_code=200)
 async def read_pagination_biodata(
-    page: int = 0, limit: int = 10, db: AsyncSession = Depends(get_db)
+    page: int = 0, size: int = 10, db: AsyncSession = Depends(get_db)
 ):
-    result = await db.execute(select(MBiodata).offset(page * limit).limit(limit))
+    result = await db.execute(select(MBiodata).offset(page * size).limit(size))
     biodatas = result.scalars().all()
     
     result_total_data = await db.execute(select(func.count()).select_from(MBiodata))
     total_data = result_total_data.scalar()
-    total_pages = int(total_data / limit)
-    if total_data % limit != 0:
+    total_pages = int(total_data / size)
+    if total_data % size != 0:
         total_pages = total_pages + 1
 
     biodata_response_list = []
@@ -55,7 +57,7 @@ async def read_pagination_biodata(
         if biodata.image_path is not None:
             biodata.image = read_file(biodata.image_path)
         biodata_response_list.append(MBiodataResponse.model_validate(biodata))
-        
+
     page_response = PageResponse[MBiodataResponse] (
         totalPages=total_pages,
         totalElements=total_data,
@@ -68,6 +70,59 @@ async def read_pagination_biodata(
         data=page_response,
     )
     return response_data
+
+# POST page biodata
+@m_biodata_router.post("/pagination", response_model=AppResponse[PageResponse[MBiodataResponse]], status_code=200)
+async def read_pagination_biodata(
+    page: int = 0, size: int = 10, sorts: list[Sorting] = [], filters: list[Filtering] = [], db: AsyncSession = Depends(get_db)
+):
+    # Create the base select statement
+    stmt = select(MBiodata)
+    
+    # Apply filtering
+    if len(filters) > 0:
+        for filter in filters:
+            pass 
+
+    # Apply sorting
+    if len(sorts) > 0:  
+        sort = sorts[0]
+        if sort.desc:
+            stmt = stmt.order_by(desc(sort.id))
+        else:
+            stmt = stmt.order_by(sort.id)
+            
+    # Apply pagination
+    stmt = stmt.offset(page * size).limit(size)
+        
+    result = await db.execute(stmt)
+    biodatas = result.scalars().all()
+    
+    result_total_data = await db.execute(select(func.count()).select_from(MBiodata))
+    total_data = result_total_data.scalar()
+    total_pages = int(total_data / size)
+    if total_data % size != 0:
+        total_pages = total_pages + 1
+
+    biodata_response_list = []
+    for biodata in biodatas:
+        if biodata.image_path is not None:
+            biodata.image = read_file(biodata.image_path)
+        biodata_response_list.append(MBiodataResponse.model_validate(biodata))
+
+    page_response = PageResponse[MBiodataResponse] (
+        totalPages=total_pages,
+        totalElements=total_data,
+        content=biodata_response_list
+    )
+
+    response_data = AppResponse[PageResponse[MBiodataResponse]](
+        status=200,
+        message="Success",
+        data=page_response,
+    )
+    return response_data
+
 
 # Get all biodata
 @m_biodata_router.get("/list", response_model=AppResponse[list[MBiodataResponse]], status_code=200)
