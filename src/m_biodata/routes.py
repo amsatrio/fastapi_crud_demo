@@ -82,6 +82,7 @@ async def read_pagination_biodata(
     # Apply filtering
     if len(filters) > 0:
         for filter in filters:
+            stmt.where(filter.id == filter.value)
             pass 
 
     # Apply sorting
@@ -94,11 +95,16 @@ async def read_pagination_biodata(
             
     # Apply pagination
     stmt = stmt.offset(page * size).limit(size)
+
+    try:
+        result = await db.execute(stmt)
+        result_total_data = await db.execute(select(func.count()).select_from(MBiodata))
+    finally:
+        await db.close()
         
-    result = await db.execute(stmt)
+    
     biodatas = result.scalars().all()
     
-    result_total_data = await db.execute(select(func.count()).select_from(MBiodata))
     total_data = result_total_data.scalar()
     total_pages = int(total_data / size)
     if total_data % size != 0:
@@ -127,7 +133,10 @@ async def read_pagination_biodata(
 # Get all biodata
 @m_biodata_router.get("/list", response_model=AppResponse[list[MBiodataResponse]], status_code=200)
 async def read_list_biodata(db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(MBiodata))
+    try:
+        result = await db.execute(select(MBiodata))
+    finally:
+        await db.close()
     biodatas = result.scalars().all()
     
     biodata_response_list = []
