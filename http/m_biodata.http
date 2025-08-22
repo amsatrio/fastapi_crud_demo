@@ -10,8 +10,17 @@ GET {{baseUrl}}/api/v1/m-biodata/list
 Content-Type: application/json
 
 ### GET m-biodata/pagination
-GET {{baseUrl}}/api/v1/m-biodata/pagination?page=0&limit=2
+GET {{baseUrl}}/api/v1/m-biodata/pagination?page=1&size=2
 Content-Type: application/json
+
+### POST m-biodata/pagination
+POST {{baseUrl}}/api/v1/m-biodata/pagination?page=1&size=2
+Content-Type: application/json
+
+{
+    "sorts": [{"id": "fullname", "desc": true}],
+    "filters": []
+}
 
 ### POST m-biodata
 POST {{baseUrl}}/api/v1/m-biodata
