@@ -8,6 +8,10 @@ import shutil
 
 log = logging.getLogger(__name__)
 def read_file(file_path):
+    if file_path is None:
+        return None
+    if file_path == '':
+        return None
     try:
         with open(file_path, 'rb') as file:
             file_content = file.read()

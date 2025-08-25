@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 import logging
 import shutil
 from pathlib import Path
-from src.config import configuration
+from src.config import environment_config
 from src.config.database_config import Base, engine
 
 log = logging.getLogger(__name__)
@@ -24,7 +24,7 @@ async def root():
 
 @health_router.get("/info", response_model=AppResponse[str])
 async def info():
-    settings = configuration.get_settings()
+    settings = environment_config.get_settings()
     response_data = AppResponse[dict](
         status=200,
         message="Success",
