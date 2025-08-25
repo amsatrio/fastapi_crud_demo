@@ -1,13 +1,29 @@
-@baseUrl = http://localhost:8989
-
-### GET health/status
-GET {{baseUrl}}/api/v1/health/status
+GET {{base_url}}/api/v1/health/status
 Content-Type: application/json
 
-### GET health/info
-GET {{baseUrl}}/api/v1/health/info
+HTTP/1.1 200  - OK
+date: Mon, 25 Aug 2025 04:40:19 GMT
+server: uvicorn
+content-length: 80
+content-type: application/json
+connection: close
+###
+GET {{base_url}}/api/v1/health/info
 Content-Type: application/json
 
-### GET health/init-db
-GET {{baseUrl}}/api/v1/health/init-db
+HTTP/1.1 200  - OK
+date: Mon, 25 Aug 2025 04:40:20 GMT
+server: uvicorn
+content-length: 134
+content-type: application/json
+connection: close
+###
+GET {{base_url}}/api/v1/health/init-db
 Content-Type: application/json
+
+HTTP/1.1 200  - OK
+date: Mon, 25 Aug 2025 04:40:20 GMT
+server: uvicorn
+content-length: 80
+content-type: application/json
+connection: close

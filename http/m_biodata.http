@@ -1,38 +1,31 @@
-@baseUrl = http://localhost:8989
-@id=1755745239
-
-### GET m-biodata/{id}
-GET {{baseUrl}}/api/v1/m-biodata/{{id}}
+GET {{base_url}}/api/v1/m-biodata/{{id_mbiodata}}
+Content-Type: application/json
+###
+GET {{base_url}}/api/v1/m-biodata/list
 Content-Type: application/json
 
-### GET m-biodata/list
-GET {{baseUrl}}/api/v1/m-biodata/list
+> {% client.global.set("id_mbiodata", response.body.data[0].id); %}
+###
+GET {{base_url}}/api/v1/m-biodata/pagination?page=0&size=2
 Content-Type: application/json
-
-### GET m-biodata/pagination
-GET {{baseUrl}}/api/v1/m-biodata/pagination?page=1&size=2
-Content-Type: application/json
-
-### POST m-biodata/pagination
-POST {{baseUrl}}/api/v1/m-biodata/pagination?page=1&size=2
+###
+POST {{base_url}}/api/v1/m-biodata/pagination?page=1&size=2
 Content-Type: application/json
 
 {
-    "sorts": [{"id": "fullname", "desc": true}],
+    "sorts": [{"id_mbiodata": "fullname", "desc": true}],
     "filters": []
 }
-
-### POST m-biodata
-POST {{baseUrl}}/api/v1/m-biodata
+###
+POST {{base_url}}/api/v1/m-biodata
 Content-Type: application/json
 
 {
     "fullname": "okey dokey",
     "mobile_phone": "087263547382"
 }
-
-### PUT m-biodata/{id}
-PUT {{baseUrl}}/api/v1/m-biodata/{{id}}
+###
+PUT {{base_url}}/api/v1/m-biodata/{{id_mbiodata}}
 Content-Type: application/json
 
 {
@@ -41,14 +34,11 @@ Content-Type: application/json
     "image_path": null,
     "image": null
 }
-
-### DELETE m-biodata/{id}
-DELETE {{baseUrl}}/api/v1/m-biodata/{{id}}
+###
+DELETE {{base_url}}/api/v1/m-biodata/{{id_mbiodata}}
 Content-Type: application/json
-
-
-### POST m-biodata/image
-POST {{baseUrl}}/api/v1/m-biodata/image/{{id}}
+###
+POST {{base_url}}/api/v1/m-biodata/image/{{id_mbiodata}}
 Content-Type: multipart/form-data; boundary=----boundary123
 
 ------boundary123

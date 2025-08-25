@@ -1,44 +1,33 @@
-@baseUrl = http://localhost:8989
-
-### GET hello-world
-GET {{baseUrl}}/api/v1/hello-world
+GET {{base_url}}/api/v1/hello-world
 Content-Type: application/json
-
-### GET hello-world/path
-GET {{baseUrl}}/api/v1/hello-world/path/asas
+###
+GET {{base_url}}/api/v1/hello-world/path/asas
 Content-Type: application/json
-
-### GET hello-world/query
-GET {{baseUrl}}/api/v1/hello-world/query?message=asa
+###
+GET {{base_url}}/api/v1/hello-world/query?message=asa
 Content-Type: application/json
-
-### POST hello-world
-POST {{baseUrl}}/api/v1/hello-world
+###
+POST {{base_url}}/api/v1/hello-world
 Content-Type: application/json
 
 {
     "message": "awk"
 }
-
-
-### POST hello-world
-POST {{baseUrl}}/api/v1/hello-world
+###
+POST {{base_url}}/api/v1/hello-world
 Content-Type: application/json
 
 {
     "message": null
 }
-
-### GET hello-world/logger
-GET {{baseUrl}}/api/v1/hello-world/logger
+###
+GET {{base_url}}/api/v1/hello-world/logger
 Content-Type: application/json
-
-### GET hello-world/error
-GET {{baseUrl}}/api/v1/hello-world/error?error_type=400
+###
+GET {{base_url}}/api/v1/hello-world/error?error_type=400
 Content-Type: application/json
-
-### POST hello-world/upload-file
-POST {{baseUrl}}/api/v1/hello-world/upload-file
+###
+POST {{base_url}}/api/v1/hello-world/upload-file
 Content-Type: multipart/form-data; boundary="my_boundary"
 
 --my_boundary
