@@ -13,6 +13,7 @@ from src.m_biodata.schemas import (
 from src.m_biodata import services
 from src.dto.response import AppResponse
 from src.config.database_config import get_db
+from src.util import file_util
 from src.util.file_util import read_file, write_file
 
 import logging
@@ -77,28 +78,29 @@ async def read_pagination_biodata(
     page: int = 0, size: int = 10, sorts: list[Sorting] = [], filters: list[Filtering] = [], db: AsyncSession = Depends(get_db)
 ):
     # Create the base select statement
-    stmt = select(MBiodata)
-    
+    statement = select(MBiodata)
+    statement_count = select(func.count()).select_from(MBiodata)
+
     # Apply filtering
     if len(filters) > 0:
         for filter in filters:
-            stmt.where(filter.id == filter.value)
-            pass 
+            statement.where(filter.id == filter.value)
+            statement_count.where(filter.id == filter.value) 
 
     # Apply sorting
     if len(sorts) > 0:  
         sort = sorts[0]
         if sort.desc:
-            stmt = stmt.order_by(desc(sort.id))
+            statement = statement.order_by(desc(sort.id))
         else:
-            stmt = stmt.order_by(sort.id)
+            statement = statement.order_by(sort.id)
             
     # Apply pagination
-    stmt = stmt.offset(page * size).limit(size)
+    statement = statement.offset(page * size).limit(size)
 
     try:
-        result = await db.execute(stmt)
-        result_total_data = await db.execute(select(func.count()).select_from(MBiodata))
+        result = await db.execute(statement)
+        result_total_data = await db.execute(statement_count)
     finally:
         await db.close()
         
@@ -213,8 +215,9 @@ async def delete_biodata(biodata_id: int, db: AsyncSession = Depends(get_db)):
 
     await db.delete(existing_biodata)
     await db.commit()
+    file_util.delete_file(existing_biodata.image_path)
 
-    response_data = AppResponse[str](status=200, message="Success")
+    response_data = AppResponse[str](status=200, message="Success", data=None)
     return response_data
 
 # Update image biodata
